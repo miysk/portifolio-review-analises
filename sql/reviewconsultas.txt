@@ -1,19 +1,35 @@
--- Passo 1: Adicionar a nova coluna para a data convertida
+-- =================================================================
+-- PASSO 0: PREPARAÇÃO DOS DADOS (ETL - Extração, Transformação, Carga)
+-- =================================================================
+-- A coluna de data foi coletada como texto. Esta etapa cria uma nova
+-- coluna do tipo DATE e a preenche com os valores convertidos para
+-- permitir análises temporais.
+
+-- Passo 0.1: Adicionar a nova coluna para a data convertida
 ALTER TABLE dbo.Reclamacoes
 ADD data_convertida DATE;
 GO
 
--- Passo 2: Atualizar a nova coluna com os valores convertidos da coluna de texto
+-- Passo 0.2: Atualizar a nova coluna com os valores convertidos da coluna de texto
 UPDATE dbo.Reclamacoes
 SET data_convertida = TRY_CONVERT(DATE,
+    -- Pega apenas a parte da data (ex: 'dd/mm/yyyy') do texto original
     CASE 
         WHEN CHARINDEX(' às ', data) > 0 THEN SUBSTRING(data, 1, CHARINDEX(' às ', data) - 1) 
-        ELSE NULL -- Ignora formatos inesperados
-    END, 103) -- 103 é o código de estilo para formato dd/mm/yyyy
+        ELSE NULL -- Ignora formatos que não contêm ' às '
+    END, 
+    103) -- 103 é o código de estilo do SQL Server para o formato dd/mm/yyyy
 WHERE data IS NOT NULL;
+GO
 
 
--- Passo 3: Agrupa as reclamações em temas predefinidos para análise.
+-- =================================================================
+-- PASSO 1: ANÁLISE - CATEGORIZAÇÃO DOS TEMAS DAS RECLAMAÇÕES
+-- =================================================================
+-- Esta consulta utiliza a declaração CASE para classificar cada 
+-- reclamação numa categoria de negócio, permitindo agregar e 
+-- quantificar os principais motivos de insatisfação.
+
 WITH TabelaComTemas AS (
     SELECT 
         CASE 
@@ -32,13 +48,37 @@ SELECT
 FROM TabelaComTemas
 GROUP BY Tema
 ORDER BY Quantidade DESC;
+GO
 
--- Passo 4: Conta o número total de reclamações para cada dia da semana.
+
+-- =================================================================
+-- PASSO 2: ANÁLISE - VOLUME DE RECLAMAÇÕES POR DIA DA SEMANA
+-- =================================================================
+-- Esta consulta utiliza a função DATENAME para extrair o dia da semana 
+-- de cada data, revelando padrões de comportamento do consumidor.
+
 SELECT
     DATENAME(WEEKDAY, data_convertida) AS dia_da_semana,
     COUNT(*) AS total_reclamacoes
 FROM dbo.Reclamacoes
 WHERE data_convertida IS NOT NULL
-GROUP BY 
-    DATENAME(WEEKDAY
+GROUP BY DATENAME(WEEKDAY, data_convertida), DATEPART(WEEKDAY, data_convertida) -- Agrupa também por DATEPART para poder ordenar
+ORDER BY DATEPART(WEEKDAY, data_convertida); -- Ordena pela ordem da semana (Domingo, Segunda...)
+GO
+
+
+-- =================================================================
+-- PASSO 3: ANÁLISE - VOLUME DIÁRIO DE RECLAMAÇÕES
+-- =================================================================
+-- Esta consulta agrega o número de reclamações por data específica,
+-- permitindo visualizar a tendência e os picos diários.
+
+SELECT
+    CONVERT(DATE, data_convertida) AS data,
+    COUNT(*) AS total_reclamacoes
+FROM dbo.Reclamacoes
+WHERE data_convertida IS NOT NULL
+GROUP BY CONVERT(DATE, data_convertida)
+ORDER BY data;
+GO
 
