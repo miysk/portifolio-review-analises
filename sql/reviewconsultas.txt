@@ -1,7 +1,19 @@
+-- Passo 1: Adicionar a nova coluna para a data convertida
+ALTER TABLE dbo.Reclamacoes
+ADD data_convertida DATE;
+GO
 
-**Consulta 1: Categorização dos Temas das Reclamações**
-*Esta consulta utiliza a declaração `CASE` para classificar cada reclamação numa categoria de negócio, permitindo agregar e quantificar os principais motivos de insatisfação.*
+-- Passo 2: Atualizar a nova coluna com os valores convertidos da coluna de texto
+UPDATE dbo.Reclamacoes
+SET data_convertida = TRY_CONVERT(DATE,
+    CASE 
+        WHEN CHARINDEX(' às ', data) > 0 THEN SUBSTRING(data, 1, CHARINDEX(' às ', data) - 1) 
+        ELSE NULL -- Ignora formatos inesperados
+    END, 103) -- 103 é o código de estilo para formato dd/mm/yyyy
+WHERE data IS NOT NULL;
 
+
+-- Agrupa as reclamações em temas predefinidos para análise.
 WITH TabelaComTemas AS (
     SELECT 
         CASE 
@@ -21,12 +33,12 @@ FROM TabelaComTemas
 GROUP BY Tema
 ORDER BY Quantidade DESC;
 
--- Consulta 2: Análise do Volume de Reclamações por Dia da Semana
 -- Conta o número total de reclamações para cada dia da semana.
 SELECT
     DATENAME(WEEKDAY, data_convertida) AS dia_da_semana,
     COUNT(*) AS total_reclamacoes
 FROM dbo.Reclamacoes
 WHERE data_convertida IS NOT NULL
-GROUP BY DATENAME(WEEKDAY, data_convertida), DATEPART(WEEKDAY, data_convertida)
-ORDER BY DATEPART(WEEKDAY, data_convertida);
+GROUP BY 
+    DATENAME(WEEKDAY
+
