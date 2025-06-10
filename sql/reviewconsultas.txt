@@ -13,7 +13,7 @@ SET data_convertida = TRY_CONVERT(DATE,
 WHERE data IS NOT NULL;
 
 
--- Agrupa as reclamações em temas predefinidos para análise.
+-- Passo 3: Agrupa as reclamações em temas predefinidos para análise.
 WITH TabelaComTemas AS (
     SELECT 
         CASE 
@@ -33,7 +33,7 @@ FROM TabelaComTemas
 GROUP BY Tema
 ORDER BY Quantidade DESC;
 
--- Conta o número total de reclamações para cada dia da semana.
+-- Passo 4: Conta o número total de reclamações para cada dia da semana.
 SELECT
     DATENAME(WEEKDAY, data_convertida) AS dia_da_semana,
     COUNT(*) AS total_reclamacoes
