@@ -1,0 +1,32 @@
+
+**Consulta 1: Categorização dos Temas das Reclamações**
+*Esta consulta utiliza a declaração `CASE` para classificar cada reclamação numa categoria de negócio, permitindo agregar e quantificar os principais motivos de insatisfação.*
+
+WITH TabelaComTemas AS (
+    SELECT 
+        CASE 
+            WHEN LOWER(descricao_completa) LIKE '%entrega%' OR LOWER(descricao_completa) LIKE '%atraso%' OR LOWER(descricao_completa) LIKE '%rastreio%' THEN 'Logística e Entrega'
+            WHEN LOWER(descricao_completa) LIKE '%reembolso%' OR LOWER(descricao_completa) LIKE '%estorno%' OR LOWER(descricao_completa) LIKE '%pagamento%' THEN 'Pagamento'
+            WHEN LOWER(descricao_completa) LIKE '%cancelamento%' OR LOWER(descricao_completa) LIKE '%cancelar%' THEN 'Cancelamento'
+            WHEN LOWER(descricao_completa) LIKE '%produto%' AND (LOWER(descricao_completa) LIKE '%defeito%' OR LOWER(descricao_completa) LIKE '%errado%') THEN 'Produto'
+            WHEN LOWER(descricao_completa) LIKE '%propaganda enganosa%' THEN 'Publicidade'
+            ELSE 'Outros'
+        END AS Tema
+    FROM dbo.Reclamacoes
+)
+SELECT 
+    Tema,
+    COUNT(*) AS Quantidade
+FROM TabelaComTemas
+GROUP BY Tema
+ORDER BY Quantidade DESC;
+
+-- Consulta 2: Análise do Volume de Reclamações por Dia da Semana
+-- Conta o número total de reclamações para cada dia da semana.
+SELECT
+    DATENAME(WEEKDAY, data_convertida) AS dia_da_semana,
+    COUNT(*) AS total_reclamacoes
+FROM dbo.Reclamacoes
+WHERE data_convertida IS NOT NULL
+GROUP BY DATENAME(WEEKDAY, data_convertida), DATEPART(WEEKDAY, data_convertida)
+ORDER BY DATEPART(WEEKDAY, data_convertida);
