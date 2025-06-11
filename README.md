@@ -19,7 +19,7 @@ Este projeto realiza uma análise completa do perfil de reclamações registrada
 
 - **Padrão Semanal:** Um pico acentuado de reclamações foi observado nas **terças-feiras**, sugerindo que os consumidores concentram suas insatisfações no início da semana útil.
 
-- **Desempenho do Atendimento:** No momento da coleta, 100% das reclamações encontravam-se com o status **"Não Respondida"**, mesmo após 9 dias da data de publicação. Esse atraso ultrapassa o prazo médio de resposta de 2 dias úteis estimado pelo Reclame Aqui. Esse cenário pode indicar uma possível sobrecarga ou insuficiência da equipe de atendimento.
+- **Desempenho do Atendimento:** No momento da coleta, **100% das reclamações** encontravam-se com o status **"Não Respondida"**, mesmo após 9 dias da data de publicação. Esse atraso ultrapassa o prazo médio de resposta de 2 dias úteis estimado pelo Reclame Aqui. Esse cenário pode indicar uma possível sobrecarga ou insuficiência da equipe de atendimento.
 
 ---
 
